@@ -8,9 +8,6 @@ import android.content.Intent
 import android.os.Build
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
-import java.text.ParseException
-import java.text.SimpleDateFormat
-import java.util.*
 
 /**
  * ローカルPUSH通知クラス.

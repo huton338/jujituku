@@ -3,11 +3,13 @@ package com.example.jujitukun.Activity
 import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.jujitukun.Entity.Task
 import com.example.jujitukun.R
 import com.example.jujitukun.RecycleAdapter
+import com.example.jujitukun.SwipeController
 import io.realm.Realm
 import io.realm.kotlin.where
 import kotlinx.android.synthetic.main.activity_main.*
@@ -46,11 +48,18 @@ class MainActivity : AppCompatActivity() {
             adapter = viewAdapter
         }
 
+        //Recycleviewをswipe及びtouchした時の設定
+        val swipe = SwipeController()
+        val itemTouchHelper = ItemTouchHelper(swipe)
+        itemTouchHelper.attachToRecyclerView(recyclerView)
+
 
         addButton.setOnClickListener {
             val intent = Intent(this, TaskEditActivity::class.java)
             startActivity(intent)
         }
+
+
     }
 
     override fun onDestroy() {
