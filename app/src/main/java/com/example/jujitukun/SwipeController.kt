@@ -1,6 +1,9 @@
 package com.example.jujitukun
 
 import android.graphics.Canvas
+import android.graphics.Color
+import android.graphics.Paint
+import android.graphics.RectF
 import android.view.MotionEvent
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.RecyclerView
@@ -10,11 +13,24 @@ import androidx.recyclerview.widget.RecyclerView
 //https://codeburst.io/android-swipe-menu-with-recyclerview-8f28a235ff28
 //https://github.com/FanFataL/swipe-controller-demo/blob/master/app/src/main/java/pl/fanfatal/swipecontrollerdemo/SwipeController.java#L65
 
-class SwipeController : ItemTouchHelper.Callback() {
+class SwipeController(buttonActions: SwipeControllerActions) : ItemTouchHelper.Callback() {
+
+    //コンストラクタ
+    var buttonActions: SwipeControllerActions? = null
+
+    init {
+        this.buttonActions = buttonActions
+    }
 
     private var swipeBack: Boolean = false
     private var buttonShowedState = ButtonsState.GONE
-    private val buttonWidth: Float = 300F
+    private val buttonWidth: Float = 200F
+    private var currentItemViewHolder: RecyclerView.ViewHolder? = null
+    private var buttonInstance: RectF? = null
+
+    //マージンを加えないとcardviewのマージンと合わなくなる
+    private val paddingtopBottom = 10F
+    private val paddingSide = 20F
 
 
     //可動域の設定（上下,左右）
@@ -43,9 +59,13 @@ class SwipeController : ItemTouchHelper.Callback() {
 
 
     //TODO:この関数の必要性よく分からない
+    //swipe位置を返す
     override fun convertToAbsoluteDirection(flags: Int, layoutDirection: Int): Int {
+        //swipeを止めた時点でif分岐に入る
         if (swipeBack) {
+            //swipeした位置がボタンの長さより 短い（false）,長い(true)
             swipeBack = buttonShowedState != ButtonsState.GONE
+            //swipeしすぎてViewHolderが画面外に行かないように位置を初期化(動かす前)
             return 0
         }
         return super.convertToAbsoluteDirection(flags, layoutDirection)
@@ -64,12 +84,13 @@ class SwipeController : ItemTouchHelper.Callback() {
     ) {
         if (actionState == ItemTouchHelper.ACTION_STATE_SWIPE) {
             if (buttonShowedState != ButtonsState.GONE) {
+                //ボタン分の空白がある位置を初期位置にする分岐
                 var dXAssgin: Float = dX
-                //この処理でボタン文の余白を作成
+                //swipe後のボタンの余白を作成
                 if (buttonShowedState == ButtonsState.LEFT_VISIBLE) dXAssgin =
-                    Math.max(dX, buttonWidth);
+                    Math.max(dX, buttonWidth)
                 if (buttonShowedState == ButtonsState.RIGHT_VISIBLE) dXAssgin =
-                    Math.min(dX, -buttonWidth);
+                    Math.min(dX, -buttonWidth)
                 super.onChildDraw(
                     c,
                     recyclerView,
@@ -78,8 +99,9 @@ class SwipeController : ItemTouchHelper.Callback() {
                     dY,
                     actionState,
                     isCurrentlyActive
-                );
+                )
             } else {
+                //空白なしの位置を初期位置にする分岐
                 setTouchListener(
                     c,
                     recyclerView,
@@ -94,6 +116,11 @@ class SwipeController : ItemTouchHelper.Callback() {
         if (buttonShowedState == ButtonsState.GONE) {
             super.onChildDraw(c, recyclerView, viewHolder, dX, dY, actionState, isCurrentlyActive)
         }
+        currentItemViewHolder = viewHolder
+    }
+
+    fun onDraw(c: Canvas): Unit {
+        currentItemViewHolder?.let { drawButtons(c, it) }
     }
 
 
@@ -197,6 +224,19 @@ class SwipeController : ItemTouchHelper.Callback() {
                 setItemsClickable(recyclerView, true)
                 swipeBack = false
                 buttonShowedState = ButtonsState.GONE
+
+                //butonActionとbuttonのエベントと位置が取得できた場合
+                if (buttonActions != null && buttonInstance != null && buttonInstance!!.contains(
+                        event.getX(),
+                        event.getY()
+                    )
+                ) {
+                    if (buttonShowedState == ButtonsState.LEFT_VISIBLE) {
+                        buttonActions!!.onLeftClicked(viewHolder.getAdapterPosition())
+                    } else if (buttonShowedState == ButtonsState.RIGHT_VISIBLE) {
+                        buttonActions!!.onRightClicked(viewHolder.getAdapterPosition())
+                    }
+                }
             }
             false
         }
@@ -218,5 +258,58 @@ class SwipeController : ItemTouchHelper.Callback() {
         LEFT_VISIBLE,
         RIGHT_VISIBLE
     }
+
+
+    private fun drawButtons(c: Canvas, viewHolder: RecyclerView.ViewHolder): Unit {
+        val buttonWidthWithoutPadding: Float = buttonWidth - 20F
+        val corners: Float = 16F
+
+        var itemView = viewHolder.itemView
+        var p = Paint()
+
+        //四角形を描画
+        val leftButton = RectF(
+            itemView.left.toFloat() + paddingSide,
+            itemView.top.toFloat() + paddingtopBottom,
+            itemView.left.toFloat() + buttonWidthWithoutPadding,
+            itemView.bottom.toFloat() - paddingtopBottom
+        )
+        p.setColor(Color.BLUE)
+        c.drawRoundRect(leftButton, corners, corners, p)
+        drawText("完了", c, leftButton, p)
+
+        val rightButton = RectF(
+            itemView.right.toFloat() - buttonWidthWithoutPadding,
+            itemView.top.toFloat() + paddingtopBottom,
+            itemView.right.toFloat() - paddingSide,
+            itemView.bottom.toFloat() - paddingtopBottom
+        )
+        p.setColor(Color.RED)
+        c.drawRoundRect(rightButton, corners, corners, p)
+        drawText("削除", c, rightButton, p)
+
+        buttonInstance = null
+        if (buttonShowedState == ButtonsState.LEFT_VISIBLE) {
+            buttonInstance = leftButton
+        } else if (buttonShowedState == ButtonsState.RIGHT_VISIBLE) {
+            buttonInstance = rightButton
+        }
+    }
+
+    private fun drawText(text: String, c: Canvas, button: RectF, p: Paint) {
+        val textSize = 30F
+        p.setColor(Color.WHITE)
+        p.setAntiAlias(true)
+        p.textSize = textSize
+
+        val textWidth = p.measureText(text)
+        c.drawText(
+            text,
+            button.centerX() - (textWidth / 2),
+            button.centerY() + (textSize / 2),
+            p
+        )
+    }
+
 
 }
