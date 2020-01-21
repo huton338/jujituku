@@ -223,7 +223,6 @@ class SwipeController(buttonActions: SwipeControllerActions) : ItemTouchHelper.C
                 recyclerView.setOnTouchListener { v, event -> false }
                 setItemsClickable(recyclerView, true)
                 swipeBack = false
-                buttonShowedState = ButtonsState.GONE
 
                 //butonActionとbuttonのエベントと位置が取得できた場合
                 if (buttonActions != null && buttonInstance != null && buttonInstance!!.contains(
@@ -237,6 +236,8 @@ class SwipeController(buttonActions: SwipeControllerActions) : ItemTouchHelper.C
                         buttonActions!!.onRightClicked(viewHolder.getAdapterPosition())
                     }
                 }
+                buttonShowedState = ButtonsState.GONE
+                currentItemViewHolder = null
             }
             false
         }

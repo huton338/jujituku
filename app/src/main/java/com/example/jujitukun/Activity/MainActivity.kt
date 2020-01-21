@@ -29,9 +29,10 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        //realm select
         realm = Realm.getDefaultInstance()
-        val tasks = realm.where<Task>().findAll()
+        //realm select
+        val status :Int = 0
+        val tasks = realm.where<Task>().equalTo("status",status).findAll()
 
         // adapterにリスナーを設定
         val radapter = RecycleAdapter(tasks)
@@ -57,37 +58,51 @@ class MainActivity : AppCompatActivity() {
         val swipe = SwipeController(object : SwipeControllerActions(){
             //swipe後、ボタンのリスナー
             override fun onLeftClicked(position: Int) {
-                //TODO:Realmを更新して完了ステータスへ
-                viewAdapter.notifyItemRemoved(position)
-                viewAdapter.notifyItemRangeChanged(position,viewAdapter.itemCount)
+                updateTaskDone(realm,viewAdapter.getItemId(position))
+//                viewAdapter.notifyItemRemoved(position)
+//                viewAdapter.notifyItemRangeChanged(position,viewAdapter.itemCount)
        }
             override fun onRightClicked(position: Int) {
                 //TODO:Realmから消す作業
-                viewAdapter.notifyItemRemoved(position)
-                viewAdapter.notifyItemRangeChanged(position,viewAdapter.itemCount)
+                deleteTask(realm,viewAdapter.getItemId(position))
+                //本来は下記の処理が必要だがOrderedRealmCollectionを使っているとOrderedRealmCollectionChangeListenerがうまくやってくれるらしい
+//                viewAdapter.notifyItemRemoved(position)
+//                viewAdapter.notifyItemRangeRemoved(position,viewAdapter.itemCount)
             }
         })
         val itemTouchHelper = ItemTouchHelper(swipe)
         itemTouchHelper.attachToRecyclerView(recyclerView)
-
         recyclerView.addItemDecoration(object: RecyclerView.ItemDecoration(){
             override fun onDraw(c: Canvas, parent: RecyclerView, state: RecyclerView.State) {
                 swipe.onDraw(c)
             }
-
         })
-
 
         addButton.setOnClickListener {
             val intent = Intent(this, TaskEditActivity::class.java)
             startActivity(intent)
         }
-
-
     }
 
     override fun onDestroy() {
         super.onDestroy()
         realm.close()
+    }
+
+
+    /**
+     * Taskを削除.
+     */
+    private fun deleteTask(realm: Realm,taskId: Long){
+        realm.executeTransaction { db:Realm ->
+            db.where<Task>().equalTo("id",taskId)?.findFirst()?.deleteFromRealm()
+        }
+    }
+
+    private fun updateTaskDone(realm: Realm,taskId: Long){
+        realm.executeTransaction { db:Realm ->
+            var updTask = db.where<Task>().equalTo("id",taskId)?.findFirst()
+            updTask?.status = 1
+        }
     }
 }

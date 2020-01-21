@@ -10,4 +10,6 @@ open class Task : RealmObject(){
     var id :Long = 0
     var content : String = ""
     var deadline : Date = Date()
+    // 0:未完了, 1:完了
+    var status : Int = 0
 }
