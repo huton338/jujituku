@@ -11,7 +11,7 @@ import android.text.format.DateFormat
 import android.view.View
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
-import com.example.jujitukun.AlarmBroadcastReceiver
+import com.example.jujitukun.LocalPushBroadcastReceiver
 import com.example.jujitukun.DatePickerDialogFragment
 import com.example.jujitukun.Entity.Task
 import com.example.jujitukun.R
@@ -96,11 +96,11 @@ class TaskEditActivity : AppCompatActivity(),
      */
     private fun setLocalPushManager(calender: Calendar, task: Task) {
         val am = getSystemService(Context.ALARM_SERVICE) as AlarmManager
-        val intent = Intent(this, AlarmBroadcastReceiver::class.java)
+        val intent = Intent(this, LocalPushBroadcastReceiver::class.java)
 
         val sdf = SimpleDateFormat("yyyy/MM/dd",Locale.JAPAN)
-        intent.putExtra(AlarmBroadcastReceiver.LOCAL_PUSH_CONTENT, task.content)
-        intent.putExtra(AlarmBroadcastReceiver.LOCAL_PUSH_DEADLINE, sdf.format(task.deadline))
+        intent.putExtra(LocalPushBroadcastReceiver.LOCAL_PUSH_CONTENT, task.content)
+        intent.putExtra(LocalPushBroadcastReceiver.LOCAL_PUSH_DEADLINE, sdf.format(task.deadline))
         calender.add(Calendar.HOUR_OF_DAY, 17)
         //TODO:今は保存５秒後に通知になっているが直す
         val c = Calendar.getInstance()

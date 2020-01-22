@@ -12,7 +12,7 @@ import androidx.core.app.NotificationManagerCompat
 /**
  * ローカルPUSH通知クラス.
  */
-class AlarmBroadcastReceiver : BroadcastReceiver() {
+class LocalPushBroadcastReceiver : BroadcastReceiver() {
 
     //定数
     companion object { //singleton

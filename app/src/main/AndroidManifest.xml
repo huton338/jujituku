@@ -11,7 +11,7 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
         <receiver
-            android:name=".AlarmBroadcastReceiver"
+            android:name=".LocalPushBroadcastReceiver"
             android:enabled="true"
             android:exported="true"></receiver>
 
