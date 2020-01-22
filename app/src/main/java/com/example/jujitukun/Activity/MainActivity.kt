@@ -15,6 +15,8 @@ import com.example.jujitukun.SwipeController
 import com.example.jujitukun.SwipeControllerActions
 import com.google.android.material.snackbar.Snackbar
 import io.realm.Realm
+import io.realm.RealmResults
+import io.realm.Sort
 import io.realm.kotlin.where
 import kotlinx.android.synthetic.main.activity_main.*
 import java.util.*
@@ -31,8 +33,7 @@ class MainActivity : AppCompatActivity() {
 
         realm = Realm.getDefaultInstance()
         //realm select
-        val status :Int = 0
-        val tasks = realm.where<Task>().equalTo("status",status).findAll()
+        val tasks = selectAll(realm)
 
         // adapterにリスナーを設定
         val radapter = RecycleAdapter(tasks)
@@ -67,7 +68,7 @@ class MainActivity : AppCompatActivity() {
                 deleteTask(realm,viewAdapter.getItemId(position))
                 //本来は下記の処理が必要だがOrderedRealmCollectionを使っているとOrderedRealmCollectionChangeListenerがうまくやってくれるらしい
 //                viewAdapter.notifyItemRemoved(position)
-//                viewAdapter.notifyItemRangeRemoved(position,viewAdapter.itemCount)
+                viewAdapter.notifyItemRangeChanged(position,viewAdapter.itemCount)
             }
         })
         val itemTouchHelper = ItemTouchHelper(swipe)
@@ -91,14 +92,27 @@ class MainActivity : AppCompatActivity() {
 
 
     /**
+     * Task（ステータス：完了）全件取得.
+     */
+    private fun selectAll(realm: Realm):RealmResults<Task>{
+        //ソートしておかないと変更を行った再描画の際のソート順序が変わってしまうためおかしくなる。
+        //https://qiita.com/konatsu_p/items/5ab92ebce46c9479876b
+        val status :Int = 0
+        return realm.where<Task>().equalTo("status",status).findAll().sort("id", Sort.ASCENDING)
+    }
+
+    /**
      * Taskを削除.
      */
     private fun deleteTask(realm: Realm,taskId: Long){
         realm.executeTransaction { db:Realm ->
-            db.where<Task>().equalTo("id",taskId)?.findFirst()?.deleteFromRealm()
+             db.where<Task>().equalTo("id",taskId)?.findFirst()?.deleteFromRealm()
         }
     }
 
+    /**
+     * Taskのステータスを完了へ更新.
+     */
     private fun updateTaskDone(realm: Realm,taskId: Long){
         realm.executeTransaction { db:Realm ->
             var updTask = db.where<Task>().equalTo("id",taskId)?.findFirst()
