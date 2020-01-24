@@ -11,7 +11,7 @@ import java.util.*
 class DatePickerDialogFragment : DialogFragment() ,DatePickerDialog.OnDateSetListener{
 
     interface OnDateSelectedListener{
-        fun OnSelected(year: Int, month :Int, date: Int)
+        fun OnSelectedDate(year: Int, month :Int, date: Int)
     }
 
     private var listener : OnDateSelectedListener? = null
@@ -33,7 +33,7 @@ class DatePickerDialogFragment : DialogFragment() ,DatePickerDialog.OnDateSetLis
     }
 
     override fun onDateSet(view: DatePicker?, year: Int, month: Int, dayOfMonth: Int) {
-        listener?.OnSelected(year,month,dayOfMonth)
+        listener?.OnSelectedDate(year,month,dayOfMonth)
     }
 
 

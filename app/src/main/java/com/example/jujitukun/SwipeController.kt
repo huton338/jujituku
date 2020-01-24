@@ -225,15 +225,16 @@ class SwipeController(buttonActions: SwipeControllerActions) : ItemTouchHelper.C
                 swipeBack = false
 
                 //butonActionとbuttonのエベントと位置が取得できた場合
-                if (buttonActions != null && buttonInstance != null && buttonInstance!!.contains(
+                //containsがnullの場合はfalse
+                if (buttonActions != null && buttonInstance?.contains(
                         event.getX(),
                         event.getY()
-                    )
+                    ) ?: false
                 ) {
                     if (buttonShowedState == ButtonsState.LEFT_VISIBLE) {
-                        buttonActions!!.onLeftClicked(viewHolder.getAdapterPosition())
+                        buttonActions?.onLeftClicked(viewHolder.getAdapterPosition())
                     } else if (buttonShowedState == ButtonsState.RIGHT_VISIBLE) {
-                        buttonActions!!.onRightClicked(viewHolder.getAdapterPosition())
+                        buttonActions?.onRightClicked(viewHolder.getAdapterPosition())
                     }
                 }
                 buttonShowedState = ButtonsState.GONE
