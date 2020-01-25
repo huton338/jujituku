@@ -4,22 +4,19 @@ import android.content.Intent
 import android.graphics.Canvas
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
-import android.widget.Toast
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.jujitukun.Entity.Task
 import com.example.jujitukun.R
-import com.example.jujitukun.RecycleAdapter
+import com.example.jujitukun.TaskRecycleAdapter
 import com.example.jujitukun.SwipeController
 import com.example.jujitukun.SwipeControllerActions
-import com.google.android.material.snackbar.Snackbar
 import io.realm.Realm
 import io.realm.RealmResults
 import io.realm.Sort
 import io.realm.kotlin.where
 import kotlinx.android.synthetic.main.activity_main.*
-import java.util.*
 
 class MainActivity : AppCompatActivity() {
     private lateinit var  realm: Realm
@@ -36,7 +33,7 @@ class MainActivity : AppCompatActivity() {
         val tasks = selectAll(realm)
 
         // adapterにリスナーを設定
-        val radapter = RecycleAdapter(tasks)
+        val radapter = TaskRecycleAdapter(tasks)
         radapter.setOnItemClickListenr {
             val intent = Intent(this, TaskEditActivity::class.java)
                 .putExtra("task_id",it)

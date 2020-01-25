@@ -6,11 +6,12 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
-import com.example.jujitukun.Entity.Task
+import com.example.jujitukun.Entity.Notification
 import io.realm.OrderedRealmCollection
 import io.realm.RealmRecyclerViewAdapter
 
-class RecycleAdapter(task : OrderedRealmCollection<Task>):RealmRecyclerViewAdapter<Task,RecycleAdapter.ViewHolder>(task,true){
+class NotificationRecycleAdapter (notification : OrderedRealmCollection<Notification>):
+    RealmRecyclerViewAdapter<Notification, NotificationRecycleAdapter.ViewHolder>(notification,true){
 
     //Long型で戻り値なしのリスナー
     private var listener : ((Long?) -> Unit)? = null
@@ -26,34 +27,28 @@ class RecycleAdapter(task : OrderedRealmCollection<Task>):RealmRecyclerViewAdapt
 
     //1行文のデータクラス
     class ViewHolder(cell: View): RecyclerView.ViewHolder(cell){
-        val content : TextView = cell.findViewById(R.id.contentText)
-        val deadLine : TextView = cell.findViewById(R.id.deadLineText)
-//        val content : TextView = cell.findViewById(android.R.id.text1)
-//        val deadLine : TextView = cell.findViewById(android.R.id.text2)
+        val notificaitonDate : TextView = cell.findViewById(R.id.notificationText)
     }
 
 
     //表示用のViewHolder(表示項目)作成
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
         val inflater = LayoutInflater.from(parent.context)
-        val view = inflater.inflate(R.layout.task_row,parent,false)
-//        val view = inflater.inflate(android.R.layout.simple_list_item_2,parent,false)
+        val view = inflater.inflate(R.layout.notification_row,parent,false)
         return ViewHolder(view)
     }
 
 
-    //TaskからViewHolder(表示項目)形式へ変換を行う
+    //NotificationからViewHolder(表示項目)形式へ変換を行う
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
-        val task : Task? = getItem(position)
-        holder.content.text = task?.content
-        holder.deadLine.text = DateFormat.format("yyyy/MM/dd",task?.deadline)
+        val notification : Notification? = getItem(position)
+        holder.notificaitonDate.text = DateFormat.format("yyyy/MM/dd HH:mm",notification?.notificationDate)
         holder.itemView.setOnClickListener {
-            listener?.invoke(task?.id)
+            listener?.invoke(notification?.id)
         }
     }
 
     override fun getItemId(position: Int): Long {
         return getItem(position)?.id ?:0
     }
-
-}
+    }
