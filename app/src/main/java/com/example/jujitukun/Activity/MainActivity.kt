@@ -61,11 +61,10 @@ class MainActivity : AppCompatActivity() {
 //                viewAdapter.notifyItemRangeChanged(position,viewAdapter.itemCount)
        }
             override fun onRightClicked(position: Int) {
-                //TODO:Realmから消す作業
                 deleteTask(realm,viewAdapter.getItemId(position))
                 //本来は下記の処理が必要だがOrderedRealmCollectionを使っているとOrderedRealmCollectionChangeListenerがうまくやってくれるらしい
 //                viewAdapter.notifyItemRemoved(position)
-                viewAdapter.notifyItemRangeChanged(position,viewAdapter.itemCount)
+//                viewAdapter.notifyItemRangeChanged(position,viewAdapter.itemCount)
             }
         })
         val itemTouchHelper = ItemTouchHelper(swipe)

@@ -3,7 +3,7 @@
 
     <!-- TODO: Remove or change this placeholder text -->
     <string name="hello_blank_fragment">Hello blank fragment</string>
-    <string name="save_text">保存</string>
+    <string name="add_text">追加</string>
     <string name="notification_add_text">通知を追加</string>
     <string name="update_text">更新</string>
     <string name="new_text">新規</string>

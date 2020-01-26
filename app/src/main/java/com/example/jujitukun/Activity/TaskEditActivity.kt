@@ -21,6 +21,7 @@ import com.example.jujitukun.Entity.Notification
 import com.example.jujitukun.Entity.Task
 import com.google.android.material.snackbar.Snackbar
 import io.realm.Realm
+import io.realm.RealmList
 import io.realm.kotlin.createObject
 import io.realm.kotlin.where
 import kotlinx.android.synthetic.main.activity_task_edit.*
@@ -30,8 +31,7 @@ import java.text.SimpleDateFormat
 import java.util.*
 
 
-//TODO:新規Task追加ボタン
-//TODO:リマインド一覧画面表示　DB保存
+
 class TaskEditActivity : AppCompatActivity(),
     DatePickerDialogFragment.OnDateSelectedListener,
     TimePickerDialogFragment.OnTimeSelectedListener {
@@ -49,6 +49,7 @@ class TaskEditActivity : AppCompatActivity(),
         setContentView(R.layout.activity_task_edit)
 
         realm = Realm.getDefaultInstance()
+        addButton2.hide()
 
         //前画面からtaskIdを取得
         taskId = intent.getLongExtra("task_id", -1L)
@@ -64,27 +65,14 @@ class TaskEditActivity : AppCompatActivity(),
             taskDateText.setText(
                 DateFormat.format("yyyy/MM/dd", it.deadline), TextView.BufferType.NORMAL
             )
-            //通知情報
+            //通知情報一覧
             if (it.notifications.size != 0) {
-                var radapter = NotificationRecycleAdapter(it.notifications)
-                radapter.setOnItemClickListenr {
-                    //TODO:うまく通知一覧が表示されない
-                    //TODO:lauoutかrecyclerviewadapterあたりがおかしい？
-                    Toast.makeText(applicationContext,"test",Toast.LENGTH_SHORT)
-                }
-
-                //RecycleView設定
-                viewManager = LinearLayoutManager(this)
-                viewAdapter = radapter
-
-
-                //findbyで取得後設定を行わなくても recycleview名.xxx で設定できる
-                recyclerView = findViewById<RecyclerView>(R.id.notiRecyclerview).apply {
-                    setHasFixedSize(true)
-                    layoutManager = viewManager
-                    adapter = viewAdapter
-                }
+                createRecyvlerView(it.notifications)
             }
+            //新規ボタン表示
+            addButton2.show()
+            //ボタンを更新へ変更
+            saveTask.setText(R.string.update_text)
         }
 
         //保存
@@ -100,6 +88,8 @@ class TaskEditActivity : AppCompatActivity(),
 
                 //ボタンを更新へ変更
                 saveTask.setText(R.string.update_text)
+                //追加ボタンを表示
+                addButton2.show()
             } else {
                 //更新
                 taskId?.let {
@@ -155,14 +145,30 @@ class TaskEditActivity : AppCompatActivity(),
                             setLocalPushManager(cal, it)
                             //DB保存
                             addNotification(cal,it.id)
+                            //Recycleviewr再描画
+                            if (it.notifications.size != 0) {
+                                createRecyvlerView(it.notifications)
+                            }
                         }
                     }
 
                     //popupwindow閉じる
                     popupWindow.dismiss()
                     Toast.makeText(this, "リマインドを追加しました。", Toast.LENGTH_SHORT).show()
-
                 }
+            }
+        }
+
+        //新規追加ボタン
+        addButton2.setOnClickListener {
+            //表示値初期化
+            taskId=null
+            saveTask.setText(R.string.add_text)
+            inputTextClear()
+            //通知一覧
+            recyclerView = findViewById<RecyclerView>(R.id.notiRecyclerview).apply {
+                layoutManager = viewManager
+                adapter = null
             }
         }
 
@@ -289,8 +295,6 @@ class TaskEditActivity : AppCompatActivity(),
             notification.status = 0
             db.where<Task>().equalTo("id", taskId)?.findFirst()?.notifications?.add(notification)
         }
-
-
     }
 
     //-------------------Extension and Util------------------------
@@ -320,4 +324,22 @@ class TaskEditActivity : AppCompatActivity(),
         return cal
     }
 
+    private fun createRecyvlerView(realmList:RealmList<Notification>):Unit{
+        var radapter = NotificationRecycleAdapter(realmList)
+        radapter.setOnItemClickListenr {
+            //TODO:なんか実装
+        }
+
+        //RecycleView設定
+        viewManager = LinearLayoutManager(this)
+        viewAdapter = radapter
+
+
+        //findbyで取得後設定を行わなくても recycleview名.xxx で設定できる
+        recyclerView = findViewById<RecyclerView>(R.id.notiRecyclerview).apply {
+            setHasFixedSize(true)
+            layoutManager = viewManager
+            adapter = viewAdapter
+        }
+    }
 }
