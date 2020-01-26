@@ -5,15 +5,19 @@ import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
 import android.graphics.Color
+import android.graphics.Point
 import android.os.Build
 import android.os.Bundle
 import android.text.format.DateFormat
+import android.view.Gravity
 import android.view.LayoutInflater
 import android.view.View
+import android.view.WindowManager
 import android.widget.PopupWindow
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.content.getSystemService
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.jujitukun.*
@@ -110,7 +114,7 @@ class TaskEditActivity : AppCompatActivity(),
                 isOutsideTouchable = true
                 isFocusable = true
             }
-            popupWindow.showAsDropDown(notificationAddButton)
+            popupWindow.showAtLocation(notificationAddButton,Gravity.CENTER,0,0)
             if (taskDateText.text.isNotEmpty()) {
                 var notificationDate = taskDateText.text.toString()
                 popupView.notificationText.setText(notificationDate, TextView.BufferType.NORMAL)
