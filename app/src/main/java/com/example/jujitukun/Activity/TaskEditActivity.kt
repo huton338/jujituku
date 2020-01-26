@@ -47,6 +47,7 @@ class TaskEditActivity : AppCompatActivity(),
     private lateinit var popupView: View
     private var datePickerId: Int = 0
     private var taskId: Long? = null
+    private var recyclerViewCreated: Boolean = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -170,9 +171,11 @@ class TaskEditActivity : AppCompatActivity(),
             saveTask.setText(R.string.add_text)
             inputTextClear()
             //通知一覧
-            recyclerView = findViewById<RecyclerView>(R.id.notiRecyclerview).apply {
-                layoutManager = viewManager
-                adapter = null
+            if(recyclerViewCreated) {
+                recyclerView = findViewById<RecyclerView>(R.id.notiRecyclerview).apply {
+                    layoutManager = viewManager
+                    adapter = null
+                }
             }
         }
 
@@ -333,11 +336,9 @@ class TaskEditActivity : AppCompatActivity(),
         radapter.setOnItemClickListenr {
             //TODO:なんか実装
         }
-
         //RecycleView設定
         viewManager = LinearLayoutManager(this)
         viewAdapter = radapter
-
 
         //findbyで取得後設定を行わなくても recycleview名.xxx で設定できる
         recyclerView = findViewById<RecyclerView>(R.id.notiRecyclerview).apply {
@@ -345,5 +346,6 @@ class TaskEditActivity : AppCompatActivity(),
             layoutManager = viewManager
             adapter = viewAdapter
         }
+        recyclerViewCreated = true
     }
 }
