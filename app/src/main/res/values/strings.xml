@@ -7,4 +7,7 @@
     <string name="notification_add_text">通知を追加</string>
     <string name="update_text">更新</string>
     <string name="new_text">新規</string>
+    <string name="purpose_of_life_hint_text">入力してください</string>
+    <string name="purpose_of_life_titile_text" >人生の目的</string>
+    <string name="save_text">保存</string>
 </resources>

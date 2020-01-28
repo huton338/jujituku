@@ -7,6 +7,7 @@ import android.os.Bundle
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.example.jujitukun.Entity.Purpose
 import com.example.jujitukun.Entity.Task
 import com.example.jujitukun.R
 import com.example.jujitukun.TaskRecycleAdapter
@@ -31,7 +32,9 @@ class MainActivity : AppCompatActivity() {
         realm = Realm.getDefaultInstance()
         //realm select
         val tasks = selectAll(realm)
+        setPurposeOfLifeText(realm)
 
+        //--------RyceclerView start----------
         // adapterにリスナーを設定
         val radapter = TaskRecycleAdapter(tasks)
         radapter.setOnItemClickListenr {
@@ -75,10 +78,31 @@ class MainActivity : AppCompatActivity() {
             }
         })
 
-        addButton.setOnClickListener {
+        //--------RyceclerView end----------
+
+
+        //＋ボタン
+        saveButton.setOnClickListener {
             val intent = Intent(this, TaskEditActivity::class.java)
             startActivity(intent)
         }
+
+        //人生の目的TextVIew
+        purposeOfLifeText.setOnClickListener {
+            val  intent = Intent(this,LifeOfPurposeActivity::class.java)
+            startActivity(intent)
+        }
+
+        //カレンダーボタン
+        calendarIconView.setOnClickListener {
+            val intent = Intent(this,CalendarActivity::class.java)
+            startActivity(intent)
+        }
+    }
+
+    override fun onResume() {
+        super.onResume()
+        setPurposeOfLifeText(realm)
     }
 
     override fun onDestroy() {
@@ -86,7 +110,17 @@ class MainActivity : AppCompatActivity() {
         realm.close()
     }
 
+    /**
+     * 人生の目的(purposeOfLifeText)設定.
+     */
+    private fun setPurposeOfLifeText(realm:Realm){
+        selectOnePurpose(realm)?.let {
+            purposeOfLifeText.setText(it.content)
+        }
+    }
 
+
+     //-----realm access----------
     /**
      * Task（ステータス：完了）全件取得.
      */
@@ -114,5 +148,14 @@ class MainActivity : AppCompatActivity() {
             var updTask = db.where<Task>().equalTo("id",taskId)?.findFirst()
             updTask?.status = 1
         }
+    }
+
+    /**
+     * Purposeの取得
+     */
+    private fun selectOnePurpose(realm: Realm): Purpose?{
+        //最新
+        var  status: Int = 0
+        return realm.where<Purpose>().equalTo("status",status)?.findFirst()
     }
 }
