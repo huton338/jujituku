@@ -20,7 +20,7 @@ TODOを管理を行うアプリケーションです。
 
 
 # 使用技術
-FW:Kotlin</br>
+言語:Kotlin</br>
 DB:Realm</br>
 
 コーディングで実装したAndroid特有の技術
