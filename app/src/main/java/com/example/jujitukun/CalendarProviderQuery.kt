@@ -6,21 +6,26 @@ import android.content.Context
 import android.database.Cursor
 import android.net.Uri
 import android.provider.CalendarContract
-import android.util.Log
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.core.content.PermissionChecker
 import androidx.core.database.getIntOrNull
 import androidx.core.database.getLongOrNull
 import androidx.core.database.getStringOrNull
+import com.example.jujitukun.Dto.CalendarDto
+import com.example.jujitukun.Dto.EventDto
 import java.util.*
-
+import kotlin.collections.ArrayList
 
 
 class CalendarProviderQuery {
 
-    private val appContext = JujutukunApplication.applicationContext()
     val callbackId = 42
+
+    private val appContext = JujutukunApplication.applicationContext()
+    private val EVENTS_START_YEAR :Int= 0
+    private val EVENTS_END_YEAR :Int= 1
+
 
     //Calendar properties
     private val CALENDAR_PROJECTION: Array<String> = arrayOf(
@@ -61,7 +66,7 @@ class CalendarProviderQuery {
 
 
     //TODO:非同期スレッドで実行するように変更
-    fun queryCalendar(context: Context, activity: Activity) {
+    fun queryCalendar(context: Context, activity: Activity) :Collection<CalendarDto>?{
         //Calendar:permissionチェック
         checkPermission(
             context,
@@ -85,27 +90,11 @@ class CalendarProviderQuery {
             null
         )
 
-
-        // Use the cursor to step through the returned records
-        if (cur != null && cur.count > 0) {
-            while (cur.moveToNext()) {
-                // Get the field values
-                val calID: Long = cur.getLong(CAL_PROJECTION_ID_INDEX)
-                val displayName: String = cur.getString(CAL_PROJECTION_DISPLAY_NAME_INDEX)
-                val accountName: String = cur.getString(CAL_PROJECTION_ACCOUNT_NAME_INDEX)
-                val ownerName: String = cur.getString(CAL_PROJECTION_OWNER_ACCOUNT_INDEX)
-                val accessLevel: Int = cur.getInt(CAL_PROJECTION_CALENDAR_ACCESS_LEVEL_INDEX)
-                // Do something with the values...
-
-                Log.v("calID", calID.toString())
-                Log.v("displayName", displayName)
-                Log.v("accountName", accountName)
-                Log.v("ownerName", ownerName)
-            }
-        }
+        //Dtoへ変換
+         return bindToCalendarDto(cur)
     }
 
-    fun queryEvent(context: Context, activity: Activity) {
+    fun queryEvent(context: Context, activity: Activity) :Collection<EventDto>?{
 
         //Calendar:permissionチェック
         checkPermission(
@@ -115,10 +104,10 @@ class CalendarProviderQuery {
             Manifest.permission.WRITE_CALENDAR
         )
 
-        val dtstart: Calendar = Calendar.getInstance()
-        dtstart.add(Calendar.YEAR, -3)
-        val dtend: Calendar = Calendar.getInstance()
-        dtend.add(Calendar.YEAR, 5)
+        val dtStart: Calendar = Calendar.getInstance()
+        dtStart.add(Calendar.YEAR, EVENTS_START_YEAR)
+        val dtEnd: Calendar = Calendar.getInstance()
+        dtEnd.add(Calendar.YEAR, EVENTS_END_YEAR)
 
 
         // Run query
@@ -126,7 +115,7 @@ class CalendarProviderQuery {
         val selection: String = "((${CalendarContract.Events.DTSTART} >= ?) AND (" +
                 "${CalendarContract.Events.DTEND} <= ?))"
         val selectionArgs: Array<String> =
-            arrayOf(dtstart.timeInMillis.toString(), dtend.timeInMillis.toString())
+            arrayOf(dtStart.timeInMillis.toString(), dtEnd.timeInMillis.toString())
         val cur: Cursor? = appContext.contentResolver.query(
             uri,
             EVENT_PROJECTION,
@@ -135,29 +124,56 @@ class CalendarProviderQuery {
             "${CalendarContract.Events.DTSTART} asc"
         )
 
-
-        // Use the cursor to step through the returned records
-
-        if (cur != null && cur.count > 0) {
-            while (cur.moveToNext()) {
-                // Get the field values
-                val calendarID: Long = cur.getLong(EV_PROJECTION_CALENDAR_ID_INDEX)
-                val organizer: String = cur.getString(EV_PROJECTION_ORGANIZER_INDEX)
-                val title: String = cur.getString(EV_PROJECTION_TITLE_INDEX)
-                val location: String = cur.getString(EV_PROJECTION_EVENT_LOCATION_INDEX)
-                val description: String? = cur.getStringOrNull(EV_PROJECTION_DESCRIPTION_INDEX)
-                val dtstart: Long? = cur.getLongOrNull(EV_PROJECTION_DTSTART_INDEX)
-                val dtend: Long? = cur.getLongOrNull(EV_PROJECTION_DTEND_INDEX)
-                val allDay: Int? = cur.getIntOrNull(EV_PROJECTION_ALL_DAY_INDEX)
-                val timezone :String? = cur.getStringOrNull(EV_PROJICTION_EVENT_TIMEZONE)
-
-                Log.v("calendarID", calendarID.toString())
-                Log.v("title", title)
-            }
-        }
-
+        //Dtoへ変換
+        return bindToEventDto(cur)
     }
 
+    /**
+     * CalendarProvider経由で取得したCalendar情報をDTOへ変換.
+     */
+    private fun bindToCalendarDto(cursor: Cursor?):Collection<CalendarDto>?{
+        if (cursor != null && cursor.count > 0) {
+            val dtoList = ArrayList<CalendarDto>()
+            while (cursor.moveToNext()) {
+                val dto = CalendarDto()
+                dto.id = cursor.getLong(CAL_PROJECTION_ID_INDEX)
+                dto.accnoutName = cursor.getString(CAL_PROJECTION_ACCOUNT_NAME_INDEX)
+                dto.accountDisplayName = cursor.getString(CAL_PROJECTION_DISPLAY_NAME_INDEX)
+                dto.ownerAccount = cursor.getString(CAL_PROJECTION_OWNER_ACCOUNT_INDEX)
+                dto.calendarAccessLevel = cursor.getInt(CAL_PROJECTION_CALENDAR_ACCESS_LEVEL_INDEX)
+                dtoList.add(dto)
+            }
+            return dtoList
+        }
+        return null
+    }
+
+    /**
+     * CalendarProvider経由で取得したEvent情報をDTOへ変換.
+     */
+    private fun bindToEventDto(cursor: Cursor?):Collection<EventDto>?{
+        if(cursor != null && cursor.count>0){
+            val dtoList = ArrayList<EventDto>()
+            while (cursor.moveToNext()){
+                var dto = EventDto()
+                dto.calendarId=cursor.getLong(EV_PROJECTION_CALENDAR_ID_INDEX)
+                dto.organizer = cursor.getString(EV_PROJECTION_ORGANIZER_INDEX)
+                dto.titile=cursor.getString(EV_PROJECTION_TITLE_INDEX)
+                dto.location=cursor.getStringOrNull(EV_PROJECTION_EVENT_LOCATION_INDEX) ?:""
+                dto.description=cursor.getStringOrNull(EV_PROJECTION_DESCRIPTION_INDEX) ?:""
+                dto.dtStart=cursor.getLong(EV_PROJECTION_DTSTART_INDEX)
+                dto.dtEnd=cursor.getLongOrNull(EV_PROJECTION_DTEND_INDEX) ?:-1L
+                dto.allDay=cursor.getIntOrNull(EV_PROJECTION_ALL_DAY_INDEX) ?:-1
+                dto.timeZone=cursor.getString(EV_PROJICTION_EVENT_TIMEZONE)
+                dtoList.add(dto)
+            }
+         return dtoList
+        }
+        return null
+    }
+
+
+    //permissionの確認とpermissionの付与
     private fun checkPermission(
         context: Context,
         activity: Activity,

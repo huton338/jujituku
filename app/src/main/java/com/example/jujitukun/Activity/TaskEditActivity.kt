@@ -5,24 +5,23 @@ import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
 import android.graphics.Color
-import android.graphics.Point
 import android.os.Build
 import android.os.Bundle
 import android.text.format.DateFormat
 import android.view.Gravity
 import android.view.LayoutInflater
 import android.view.View
-import android.view.WindowManager
 import android.widget.PopupWindow
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.content.getSystemService
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.jujitukun.*
 import com.example.jujitukun.Entity.Notification
 import com.example.jujitukun.Entity.Task
+import com.example.jujitukun.Fragment.DatePickerDialogFragment
+import com.example.jujitukun.Fragment.TimePickerDialogFragment
 import com.google.android.material.snackbar.Snackbar
 import io.realm.Realm
 import io.realm.RealmList
@@ -124,13 +123,15 @@ class TaskEditActivity : AppCompatActivity(),
             //カレンダー
             popupView.calIcon.setOnClickListener {
                 datePickerId = 1
-                val dialog = DatePickerDialogFragment()
+                val dialog =
+                    DatePickerDialogFragment()
                 dialog.show(supportFragmentManager, "dialog_date")
             }
 
             //時間
             popupView.clockIcon.setOnClickListener {
-                val dialog = TimePickerDialogFragment()
+                val dialog =
+                    TimePickerDialogFragment()
                 dialog.show(supportFragmentManager, "dialog_time")
             }
 
@@ -182,7 +183,8 @@ class TaskEditActivity : AppCompatActivity(),
         //カレンダー入力
         calIcon.setOnClickListener {
             datePickerId = 0
-            val dialog = DatePickerDialogFragment()
+            val dialog =
+                DatePickerDialogFragment()
             dialog.show(supportFragmentManager, "dialog_date")
         }
     }

@@ -1,4 +1,4 @@
-package com.example.jujitukun
+package com.example.jujitukun.Fragment
 
 import android.app.DatePickerDialog
 import android.app.Dialog
