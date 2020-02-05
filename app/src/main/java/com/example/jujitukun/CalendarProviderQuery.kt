@@ -128,6 +128,43 @@ class CalendarProviderQuery {
         return bindToEventDto(cur)
     }
 
+
+    fun queryEventBySelectedDay(context: Context, activity: Activity,year:Int,month:Int,date:Int) :Collection<EventDto>?{
+
+        //Calendar:permissionチェック
+        checkPermission(
+            context,
+            activity,
+            Manifest.permission.READ_CALENDAR,
+            Manifest.permission.WRITE_CALENDAR
+        )
+
+        //TODO:epochtimeの値がcalendarproviderの値とずれるため終日の予定がselectできない。
+        var dtStart: Calendar = Calendar.getInstance()
+        //2020/01/01 00h00m00s
+        dtStart.set(year, month-1, date,0,0)
+        var dtEnd: Calendar = Calendar.getInstance()
+        //2020/01/02 00h00m00s
+        dtEnd.set(year, month-1, date+1,0,0)
+
+        // Run query
+        val uri: Uri = CalendarContract.Events.CONTENT_URI
+        val selection: String = "((${CalendarContract.Events.DTSTART} >= ?) AND (" +
+                "${CalendarContract.Events.DTEND} <= ?))"
+        val selectionArgs: Array<String> =
+            arrayOf(dtStart.time.time.toString(), dtEnd.time.time.toString())
+        val cur: Cursor? = appContext.contentResolver.query(
+            uri,
+            EVENT_PROJECTION,
+            selection,
+            selectionArgs,
+            "${CalendarContract.Events.DTSTART} asc"
+        )
+
+        //Dtoへ変換
+        return bindToEventDto(cur)
+    }
+
     /**
      * CalendarProvider経由で取得したCalendar情報をDTOへ変換.
      */
