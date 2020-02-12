@@ -139,13 +139,21 @@ class CalendarProviderQuery {
             Manifest.permission.WRITE_CALENDAR
         )
 
-        //TODO:epochtimeの値がcalendarproviderの値とずれるため終日の予定がselectできない。
-        var dtStart: Calendar = Calendar.getInstance()
-        //2020/01/01 00h00m00s
-        dtStart.set(year, month-1, date,0,0)
-        var dtEnd: Calendar = Calendar.getInstance()
-        //2020/01/02 00h00m00s
-        dtEnd.set(year, month-1, date+1,0,0)
+        // startからendは24h後を1日とする
+        // calendar providerの終日のデフォルトの値に合わせて設定している
+        val gmt = TimeZone.getTimeZone("GMT")
+        val dtStart: Calendar = Calendar.getInstance()
+        //calendar providerの時間はGMT基準で保存されているため合わせる
+        dtStart.timeZone=gmt
+        //clearを入れてmillisecondを0に初期化
+        dtStart.clear()
+        //start: 2020/01/01 00h00m00s
+        dtStart.set(year, month-1, date,0,0,0)
+        val dtEnd: Calendar = Calendar.getInstance()
+        dtEnd.timeZone=gmt
+        dtEnd.clear()
+        //end: 2020/01/02 00h00m00s
+        dtEnd.set(year, month-1, date+1,0,0,0)
 
         // Run query
         val uri: Uri = CalendarContract.Events.CONTENT_URI
